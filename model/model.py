@@ -1,5 +1,14 @@
 # UNet model
 
+# imports
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+
+# Convolutional block
+
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
         super(ConvBlock, self).__init__()
@@ -12,7 +21,7 @@ class ConvBlock(nn.Module):
         x = F.elu(x)
         return x
 
-# DownSampling
+# Encoder block -> downsampling
 
 class EncoderBlock(nn.Module):
     def __init__(self, in_channels, model_depth=4, pool_size=2):
@@ -52,6 +61,7 @@ class EncoderBlock(nn.Module):
 
         return x, down_sampling_features
 
+# Transpose convolution block
 
 class ConvTranspose(nn.Module):
     def __init__(self, in_channels, out_channels, k_size=3, stride=2, padding=1, output_padding=1):
@@ -67,7 +77,7 @@ class ConvTranspose(nn.Module):
         return self.conv3d_transpose(x)
 
 
-# UpSampling
+# Decoder block -> upsampling
 
 class DecoderBlock(nn.Module):
     def __init__(self, out_channels, model_depth=4):
@@ -101,6 +111,8 @@ class DecoderBlock(nn.Module):
             else:
                 x = op_call(x)
         return x
+
+# Entity model
 
 class UnetModel(nn.Module):
     def __init__(self, in_channels, out_channels, model_depth=4, final_activation="sigmoid"):
