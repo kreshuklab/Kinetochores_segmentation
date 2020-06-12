@@ -4,15 +4,19 @@
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
 
 # Convolutional block
 
 class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
+    """Operations: convolution +
+    batchnorm -> activation (elu)"""
+
+    def __init__(self, in_channels, out_channels, kernel_size=3,\
+     stride=1, padding=1):
         super(ConvBlock, self).__init__()
-        self.conv3d = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+        self.conv3d = nn.Conv3d(in_channels=in_channels, out_channels=out_channels,\
+         kernel_size=kernel_size,
                                 stride=stride, padding=padding)
         self.batch_norm = nn.BatchNorm3d(num_features=out_channels)
 
@@ -21,9 +25,11 @@ class ConvBlock(nn.Module):
         x = F.elu(x)
         return x
 
-# Encoder block -> downsampling
 
 class EncoderBlock(nn.Module):
+    """Encoding of the input
+    in downsampling"""
+
     def __init__(self, in_channels, model_depth=4, pool_size=2):
         super(EncoderBlock, self).__init__()
         self.root_feat_maps = 16
@@ -35,22 +41,27 @@ class EncoderBlock(nn.Module):
             for num in range(self.num_conv_blocks):
                 # print("depth {}, conv {}".format(depth, i))
                 if depth == 0:
-                    self.conv_block = ConvBlock(in_channels=in_channels, out_channels=feat_map_channels)
+                    self.conv_block = ConvBlock(in_channels=in_channels,\
+                     out_channels=feat_map_channels)
                     self.module_dict["conv_{}_{}".format(depth, num)] = self.conv_block
-                    in_channels, feat_map_channels = feat_map_channels, feat_map_channels * 2
+                    in_channels, feat_map_channels = feat_map_channels,\
+                     feat_map_channels * 2
                 else:
-                    self.conv_block = ConvBlock(in_channels=in_channels, out_channels=feat_map_channels)
+                    self.conv_block = ConvBlock(in_channels=in_channels,\
+                     out_channels=feat_map_channels)
                     self.module_dict["conv_{}_{}".format(depth, num)] = self.conv_block
-                    in_channels, feat_map_channels = feat_map_channels, feat_map_channels * 2
+                    in_channels, feat_map_channels = feat_map_channels,\
+                     feat_map_channels * 2
             if depth == model_depth - 1:
                 break
             else:
-                self.pooling = nn.MaxPool3d(kernel_size=pool_size, stride=2, padding=0)
+                self.pooling = nn.MaxPool3d(kernel_size=pool_size,\
+                 stride=2, padding=0)
                 self.module_dict["max_pooling_{}".format(depth)] = self.pooling
 
     def forward(self, x):
         down_sampling_features = []
-        
+
         for op_name, op_call in self.module_dict.items():
             if op_name.startswith("conv"):
                 x = op_call(x)
@@ -61,10 +72,13 @@ class EncoderBlock(nn.Module):
 
         return x, down_sampling_features
 
-# Transpose convolution block
 
 class ConvTranspose(nn.Module):
-    def __init__(self, in_channels, out_channels, k_size=3, stride=2, padding=1, output_padding=1):
+    """Transpose convolution
+    operation in upsampling"""
+
+    def __init__(self, in_channels, out_channels, k_size=3, stride=2,\
+     padding=1, output_padding=1):
         super(ConvTranspose, self).__init__()
         self.conv3d_transpose = nn.ConvTranspose3d(in_channels=in_channels,
                                                    out_channels=out_channels,
@@ -80,6 +94,9 @@ class ConvTranspose(nn.Module):
 # Decoder block -> upsampling
 
 class DecoderBlock(nn.Module):
+    """Decoding block to 
+    reconstruct the input"""
+
     def __init__(self, out_channels, model_depth=4):
         super(DecoderBlock, self).__init__()
         self.num_conv_blocks = 2
@@ -88,17 +105,21 @@ class DecoderBlock(nn.Module):
 
         for depth in range(model_depth - 2, -1, -1):
             feat_map_channels = 2 ** (depth + 1) * self.num_feat_maps
-            self.deconv = ConvTranspose(in_channels=feat_map_channels * 4, out_channels=feat_map_channels * 4)
+            self.deconv = ConvTranspose(in_channels=feat_map_channels * 4,\
+             out_channels=feat_map_channels * 4)
             self.module_dict["deconv_{}".format(depth)] = self.deconv
             for num in range(self.num_conv_blocks):
                 if num == 0:
-                    self.conv = ConvBlock(in_channels=feat_map_channels * 6, out_channels=feat_map_channels * 2)
+                    self.conv = ConvBlock(in_channels=feat_map_channels * 6,\
+                     out_channels=feat_map_channels * 2)
                     self.module_dict["conv_{}_{}".format(depth, num)] = self.conv
                 else:
-                    self.conv = ConvBlock(in_channels=feat_map_channels * 2, out_channels=feat_map_channels * 2)
+                    self.conv = ConvBlock(in_channels=feat_map_channels * 2,\
+                     out_channels=feat_map_channels * 2)
                     self.module_dict["conv_{}_{}".format(depth, num)] = self.conv
             if depth == 0:
-                self.final_conv = ConvBlock(in_channels=feat_map_channels * 2, out_channels=out_channels)
+                self.final_conv = ConvBlock(in_channels=feat_map_channels * 2,\
+                 out_channels=out_channels)
                 self.module_dict["final_conv"] = self.final_conv
 
     def forward(self, x, down_sampling_features):
@@ -115,6 +136,9 @@ class DecoderBlock(nn.Module):
 # Entity model
 
 class UnetModel(nn.Module):
+    """Downsampling + Upsampling
+    -> complete UNet"""
+
     def __init__(self, in_channels, out_channels, model_depth=4, final_activation="sigmoid"):
         super(UnetModel, self).__init__()
         self.encoder = EncoderBlock(in_channels=in_channels, model_depth=model_depth)
