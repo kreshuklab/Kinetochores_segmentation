@@ -5,7 +5,7 @@ import math
 import torch
 import numpy as np
 
-def reshape_data(data, val_data):
+def data_reshape(data, val_data):
     """reshape data in 
     C,Z,Y,X format"""
 
@@ -26,7 +26,7 @@ def reshape_data(data, val_data):
 
 # Standardize the data
 
-def standardize_data(ds_target, val_ds_target):
+def data_standardize(ds_target, val_ds_target):
     """Standardize the signal 
         values in the volume"""
 
