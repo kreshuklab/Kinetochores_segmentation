@@ -17,6 +17,12 @@ def subvol_annotations(old_fname, new_fname):
     with open(old_fname, 'rb') as hn:
         data = pickle.load(hn)
 
+    try:
+        assert isinstance(data, dict)
+    except:
+        raise AssertionError('Input pickle should be a dict')
+        exit()
+
     newdata = {}
     for k, val in data.items():
         val_list = []
@@ -38,7 +44,11 @@ def ds_creator(pickle_file):
     with open(pickle_file, 'rb') as new_pkl:
         labels = pickle.load(new_pkl)
 
-    assert isinstance(labels, dict)
+    try:
+        assert isinstance(labels, dict)
+    except:
+        raise AssertionError('Input pickle should be a dict')
+        exit()
 
     for k, v in labels.items():
         v[0], v[1], v[2] = int(v[0]), int(v[1]), int(v[2])
