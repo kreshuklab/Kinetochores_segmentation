@@ -1,3 +1,5 @@
+# TODO: Merge this file with the new file
+
 """Transform annotation as per subvol"""
 
 import pickle
@@ -50,6 +52,7 @@ def ds_creator(pickle_file):
         raise AssertionError('Input pickle should be a dict')
         exit()
 
+    # Label signals as 1.0
     for k, v in labels.items():
         v[0], v[1], v[2] = int(v[0]), int(v[1]), int(v[2])
         labels[v[2], v[1], v[0]] = 1.0
