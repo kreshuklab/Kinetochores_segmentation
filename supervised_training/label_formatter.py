@@ -49,7 +49,7 @@ def pickle_creator(pair_num_list, Xpx, Ypx, Zpx):
             if pair in temp_dict.keys():
                 continue
             else:
-                temp_dict[pair] = (Xpx[j], Ypx[j], Zpx[j])
+                temp_dict[pair] = [Xpx[j], Ypx[j], Zpx[j]]
                 del pair_num_list[j]
                 del Xpx[j]
                 del Ypx[j]
