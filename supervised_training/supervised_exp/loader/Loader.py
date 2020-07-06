@@ -6,10 +6,13 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 
 class dloader(object):
+    """
+    dataloader class
+    """
     def __init__(self):
         pass
 
-    def load_data(self, batch_size, ds_input, ds_target, val_ds_input, val_ds_target):
+    def load_data(batch_size, ds_input, ds_target, val_ds_input, val_ds_target):
         """
         bs: batch size (int)
         ds_input: input dataset (Tensor)

@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
     ds_input, val_ds_input = standardize.standardize_ds(ds_input, val_ds_input)
 
-    train_loader, valid_loader = dloader.load_data('', batch_size, ds_input, ds_target, val_ds_input, val_ds_target)
+    train_loader, valid_loader = dloader.load_data(batch_size, ds_input, ds_target, val_ds_input, val_ds_target)
 
     smoothing = GaussianSmoothing(1, 30, 11, 3)
 

@@ -1,3 +1,7 @@
+"""
+Gaussian smoothing module
+"""
+
 import math
 import numbers
 import torch
