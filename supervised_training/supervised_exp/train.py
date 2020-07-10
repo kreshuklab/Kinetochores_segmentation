@@ -23,8 +23,8 @@ from std.standardize import standardize
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir_path', default='', help='provide path to dataset')
-parser.add_argument('--batch_size', default=1)
-parser.add_argument('--num-epochs', default=5, help='Number of epochs')
+parser.add_argument('--batch_size', default=2)
+parser.add_argument('--num-epochs', default=10, help='Number of epochs')
 parser.add_argument('--lr', default=0.0001, help='Learning rate for training')
 
 # parser.add_argument('--optimizer', default='')
@@ -57,6 +57,8 @@ def train(model, train_loader, valid_loader, num_epochs, smoothing, criterion, o
 
     device = torch.device('cuda')
 
+    scheduler = StepLR(optimizer, step_size=2, gamma=0.92)
+
     for epoch in range(1, num_epochs+1):
         model.train()
         t_loss = 0.0
@@ -83,7 +85,7 @@ def train(model, train_loader, valid_loader, num_epochs, smoothing, criterion, o
         train_loss = t_loss / len(ip)   # batch_size
 
         #scheduler.step()
-        writer.add_scalar('train_loss', train_loss)
+        writer.add_scalar('train_loss', train_loss, global_step=epoch)
 
         if epoch % 1 == 0:
             print('Epoch {} of {}, Train Loss: {:.3f}'.format(
@@ -104,19 +106,22 @@ def train(model, train_loader, valid_loader, num_epochs, smoothing, criterion, o
                 loss = criterion(gauss_xval, gauss_yval)
 
                 if epoch % 1 == 0:
-                    writer.add_figure('Panel 1: pred vs actual at epoch{}'.format(epoch), plot_figs(gauss_xval.cpu(), gauss_yval.cpu()))
+                    writer.add_images('Prediction at epoch{}'.format(epoch), gauss_xval[:,:,20:21].squeeze(2), global_step=epoch, dataformats='NCHW')
+                    writer.add_images('Target', gauss_yval[:,:,20:21].squeeze(2), global_step=epoch, dataformats='NCHW')
+
+                    #writer.add_figure('Panel 1: pred vs actual at epoch{}'.format(epoch), plot_figs(gauss_xval.cpu(), gauss_yval.cpu()))
 
                 v_loss += loss.item()
 
             valid_loss = v_loss / len(xval)
 
-            writer.add_scalar('val_loss', valid_loss)
-            # if epoch == 1:
-            #     loss_for_step = valid_loss
-            # else:
-            #     if valid_loss < loss_for_step:
-            #         loss_for_step = valid_loss
-            #         scheduler.step()
+            writer.add_scalar('val_loss', valid_loss, global_step=epoch)
+        if epoch == 1:
+            loss_for_step = valid_loss
+        else:
+            if valid_loss < loss_for_step:
+                loss_for_step = valid_loss
+                scheduler.step()
 
         if epoch % 1 == 0:
             print('Epoch {}, Valid Loss: {:.3f}'.format(
@@ -143,7 +148,7 @@ if __name__ == '__main__':
 
     train_loader, valid_loader = dloader.load_data(batch_size, ds_input, ds_target, val_ds_input, val_ds_target)
 
-    smoothing = GaussianSmoothing(1, 30, 11, 3)
+    smoothing = GaussianSmoothing(1, 17, 5, 3)
 
     criterion = RMSLELoss()
     model = UnetModel(in_channels=1, out_channels=1)
