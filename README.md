@@ -21,4 +21,10 @@ Format - PairX\_1, PairX\_2 (X ranging from 1 to 40)
 based on config direction in [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet)
 
 
-
+## Update with new supervised experiments:
+1. Supervised experiments with vanilla 3d unet (own version) and L2 loss, not really useful predictions.
+2. Same network, addition of gaussian in the loss function, slightly improved results.
+2. Pytorch-3dunet experiments with DICE loss -> highly improved but blurry boundaries in the results.
+3. DICE loss + gaussian smoothing -> GaussianDiceLoss : Good qualitative results, can move for the quantitative analysis.
+4. Working to postprocess the predictions comparing with the target for localization of the emitters.
+5. Current approach : 3d Maxima output from predictions (called peaks) -> binarize peaks -> EDT on Target -> label func on both peaks and target -> get emitter positions -> match peaks to emitters from target
