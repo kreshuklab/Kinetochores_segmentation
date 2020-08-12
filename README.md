@@ -28,3 +28,9 @@ based on config direction in [pytorch-3dunet](https://github.com/wolny/pytorch-3
 3. DICE loss + gaussian smoothing -> GaussianDiceLoss : Good qualitative results, can move for the quantitative analysis.
 4. Working to postprocess the predictions comparing with the target for localization of the emitters.
 5. Current approach : 3d Maxima output from predictions (called peaks) -> binarize peaks -> EDT on Target -> label func on both peaks and target -> get emitter positions -> match peaks to emitters from target
+
+## Update on quantitative results:
+1. Spatial distance euclidean and standard euclidean (can provide weights as per the variance across x,y,z). Resolution - x,y: 130nm, z: 300nm
+
+## Next steps:
+1. Create volumes with the matched and unmatched label coordinates. *No data augmentation yet. Possible unmatched issues due to intensity difference, but need check.*
