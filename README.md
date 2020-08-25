@@ -34,3 +34,8 @@ based on config direction in [pytorch-3dunet](https://github.com/wolny/pytorch-3
 
 ## Next steps:
 1. Create volumes with the matched and unmatched label coordinates. *No data augmentation yet. Possible unmatched issues due to intensity difference, but need check.*
+
+## Update 25/08:
+1. Reduction of gaussian kernel across time/ epochs during training procedure implemented. Current approach involves epoch based kernel values. Need to automate this for random kernel assignment for possibly better results.
+2. File with incorrect labels in Z across time added.
+3. Next -> Passing multiple volumes with temporal context (3 at once for now).
