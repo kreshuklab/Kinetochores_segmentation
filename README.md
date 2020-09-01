@@ -39,3 +39,10 @@ based on config direction in [pytorch-3dunet](https://github.com/wolny/pytorch-3
 1. Reduction of gaussian kernel across time/ epochs during training procedure implemented. Current approach involves epoch based kernel values. Need to automate this for random kernel assignment for possibly better results.
 2. File with incorrect labels in Z across time added.
 3. Next -> Passing multiple volumes with temporal context (3 at once for now).
+
+## Update 01/09:
+1. Temporal context done, 3 volume as 3 channels -> Need cluster for this, fails in memory locally.
+2. Current experiments -> 
+a) Temporal vols + Dice 
+b) Temporal vols + GaussianDice (Fixed gaussian) -> b.1] k, sigma: (3,1) b.2] (5,1) b.3] (7,2)
+c) Temporal vols + Reduction in kernel, sigma over time.
