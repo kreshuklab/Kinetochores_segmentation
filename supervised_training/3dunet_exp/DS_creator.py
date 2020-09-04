@@ -65,7 +65,7 @@ def ds_creator(data_dir, label_dir):
 
         
         # save as dataset to be passed to model
-        fname = 'EGFP_ds' + label.split('/')[-1].split('.')[0][4:] + '.h5'
+        fname = 'mcherry_ds' + label.split('/')[-1].split('.')[0][4:] + '.h5'
         h5file = h5py.File(fname, 'w')
         h5file.create_dataset('raw', data=egfp_array)
         h5file.create_dataset('label', data=temp_label, dtype='f4')
