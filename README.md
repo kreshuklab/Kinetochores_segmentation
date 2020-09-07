@@ -46,3 +46,7 @@ based on config direction in [pytorch-3dunet](https://github.com/wolny/pytorch-3
 a) Temporal vols + Dice 
 b) Temporal vols + GaussianDice (Fixed gaussian) -> b.1] k, sigma: (3,1) b.2] (5,1) b.3] (7,2)
 c) Temporal vols + Reduction in kernel, sigma over time.
+
+## Update 07/09:
+1. There are some labels assigned as the medium intensity sources, which seem to be there but if compared to the high intensity sources, its a bit different. So in reconstruction, we need to have that blur area around the high intensity blob to be present.
+2. Many labels seem to be misaligned and thus can be corrected but this can't be a major issue since its labeling in 3d and the peak finder can pick these points. *Thus thresholding value is important.*
