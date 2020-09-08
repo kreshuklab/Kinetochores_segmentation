@@ -50,3 +50,27 @@ c) Temporal vols + Reduction in kernel, sigma over time.
 ## Update 07/09:
 1. There are some labels assigned as the medium intensity sources, which seem to be there but if compared to the high intensity sources, its a bit different. So in reconstruction, we need to have that blur area around the high intensity blob to be present.
 2. Many labels seem to be misaligned and thus can be corrected but this can't be a major issue since its labeling in 3d and the peak finder can pick these points. *Thus thresholding value is important.*
+
+## Experiments:
+Data -> 1 channel raw, 1 channel target
+1. Vanilla 3d UNet + RMSE loss
+2. Vanilla 3d UNet + Dice loss
+3. PyTorch 3d UNet + MSE loss
+4. PyTorch 3d UNet + Dice loss
+5. PyTorch 3d UNet + GaussianDice loss -> a) (3,1) b) (5,1) c) (7,2) d) (11,3)
+
+6. Decreasing gaussian + dice loss -> Kernel, sigma values (7,2) -> (5,1) -> (3,1) *** 6 epochs only
+Need to try with more epochs and gaussian values
+
+Data -> 2 channel (EGFP + mcherry) raw, 1 channel target
+7. PyTorch 3d UNet + Dice loss
+8. PyTorch 3d UNet + GaussianDice loss -> a) (3,1) b) (5,1) c) (7,2) d) (11,3) e) (5,2) f) (14,4)
+
+Data -> 3 channel (EGFP only with t-1,t,t+1) raw, 1 channel (t) target
+9. PyTorch 3d UNet + Dice
+10. PyTorch 3d UNet + GaussianDice -> 10.1] (3,1) a) 10 epochs b) 20 epochs, 10.2] (5,1) a) 10 epochs b) 20 epochs, 10.3] (7,2) a) 10 epochs b) 20 epochs
+
+Data -> 6 channel (EGFP + mcherry: [t-1(eg), t-1(mc), t(eg), t(mc), t+1(eg), t+1(mc)]) raw, 2 channel (t) target
+11. PyTorch 3d UNet + Dice loss
+12. PyTorch 3d UNet + GaussianDice loss -> a) (3,1) b) (5,1) c) (7,2) d) (14,4) e) (9,3) f) (5,2)
+
