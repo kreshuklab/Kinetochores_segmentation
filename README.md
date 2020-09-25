@@ -74,3 +74,6 @@ Data -> 6 channel (EGFP + mcherry: [t-1(eg), t-1(mc), t(eg), t(mc), t+1(eg), t+1
 11. PyTorch 3d UNet + Dice loss
 12. PyTorch 3d UNet + GaussianDice loss -> a) (3,1) b) (5,1) c) (7,2) d) (14,4) e) (9,3) f) (5,2)
 
+## In progress:
+We tried using dilated labels with Dice loss and gaussian dice loss but need to reuse the idea with the temporal setting as it can be useful here specifically.
+

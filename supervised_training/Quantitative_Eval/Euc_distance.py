@@ -34,7 +34,7 @@ def SpatialDistanceEval(csvfile):
 		for px, py, pz in zip(Pred_x, Pred_y, Pred_z):
 			
 			# Take the standardized euclidean distance
-			std_euc_distance = distance.seuclidean([x,y,z], [px, py, pz], [1,1,2.3])
+			std_euc_distance = distance.seuclidean([x,y,z], [px, py, pz], [1.3,1.3,3.0])
 			
 			# Take the euclidean distance
 			#dist = distance.euclidean([x,y,z], [px, py, pz])
