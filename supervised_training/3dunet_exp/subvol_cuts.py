@@ -9,12 +9,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('annotation_pickle_path', default='', help='Path to annotation pickle file')
 parser.add_argument('new_filename', default='', help='New filename')
 
+# Get the vol and transform as per the subvol size
+# using 12-60 out of 61 for Z (12 start for Z), 436-564
+# for Y, X (436 as start for Y, X).
+
 def subvol_annotations(old_fname, new_fname):
-    """Get the vol and transform
-    as per the subvol size
-    using 12-60 out of 61 for Z
-    (12 start for Z), 436-564
-    for Y, X (436 as start for Y, X)."""
+    """
+    old_fname: original annotation file
+    new_fname: modified annotation file
+    """
 
     with open(old_fname, 'rb') as hn:
         data = pickle.load(hn)
@@ -38,10 +41,13 @@ def subvol_annotations(old_fname, new_fname):
 
     return new_fname
 
+
+#Get the h5 datatset as the format mentioned in the pytorch-3dunet
+
 def ds_creator(pickle_file):
-    """Get the h5 datatset
-    as the format mentioned
-    in the pytorch-3dunet"""
+    """
+    pickle_file: file with annotations
+    """
 
     with open(pickle_file, 'rb') as new_pkl:
         labels = pickle.load(new_pkl)

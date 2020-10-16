@@ -13,7 +13,10 @@ parser.add_argument('datadir_path', default='', help='Path to data files')
 parser.add_argument('labeldir_path', default='', help='Path to label files')
 
 def ds_creator(data_dir, label_dir):
-    """ds_creator function"""
+    """
+    data_dir: path to raw data files
+    label_dir: path to gt label files
+    """
 
     data_dir = os.listdir(data_dir)
     label_dir = os.listdir(label_dir)
