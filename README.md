@@ -74,6 +74,10 @@ Data -> 6 channel (EGFP + mcherry: [t-1(eg), t-1(mc), t(eg), t(mc), t+1(eg), t+1
 11. PyTorch 3d UNet + Dice loss
 12. PyTorch 3d UNet + GaussianDice loss -> a) (3,1) b) (5,1) c) (7,2) d) (14,4) e) (9,3) f) (5,2)
 
-## In progress:
 We tried using dilated labels with Dice loss and gaussian dice loss but need to reuse the idea with the temporal setting as it can be useful here specifically.
 
+## Update 17/10:
+Regression approach: apply distance transform on the labels, network regression for distance to minimum in a region. Then apply peak local min to get all the minima and the neighborhood.
+Experiments - 1 channel, 2 channel, 3 channel and 6 channel
+
+1. Instance segmentation with stardist -> distance transform on the labels, apply thresholding to get spherical labels, relabel neighborhood based on original label coordinates. Stardist grid and rays parameters are the key.
