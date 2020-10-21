@@ -83,13 +83,13 @@ Experiments - 1 channel, 2 channel, 3 channel and 6 channel
 1. Instance segmentation with stardist -> distance transform on the labels, apply thresholding to get spherical labels, relabel neighborhood based on original label coordinates. Stardist grid and rays parameters are the key.
 
 ### Stardist experiments:
-We have the polyhedra fitting function. It works for 3d example data with 48 rays and anisotropy of (2,1,1) in Z,Y,X. BUT with our data, it does not fit with heavy anisotropy as well as grid of (1,16,16), also with the higher number of rays -> upto 1024.
-We tried using 2d slices out of the data and check if it works at least for 2d with the pretrained model and it seems that it works. (trainig will provide proper results but we are not interested in 2d).
+We have the polyhedra fitting function. It works for 3d example data with 48 rays and anisotropy of (2,1,1) in Z,Y,X. 
+Label issues - resolved. Normal range anisotropy. Now 1024 rays fits with 0.9 probability but its large number. Reduce the num of rays and check which works better.
 
-Now, the idea is to move with training on example data save the weights and load these for our data training instead of training from scratch.
+Results with normal vols and temporal vols.
 
-## Next possibility:
-Prepare own setup similar to stardist where we can predict the centre instead of the boundaries. Maybe use a spherical/ bulged shape instead of polyhedra and train to obtain the directions towards centre.
+In normal vols, raw and labels: [48,128,128]
+In temporal vols, raw data: [48,128,128,3] and labels: [48,128,128] - only the centre vol label.
 
 ## Another thing to try:
 Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.

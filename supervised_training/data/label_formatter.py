@@ -77,7 +77,7 @@ def pickle_creator(pair_num_list, Xpx, Ypx, Zpx):
 
     # Store the dicts as pickles per timestep
     for k, dicts in enumerate(dict_list):
-        file_name = 'file' + str(k) + '.pickle'
+        file_name = 'Vol_' + str(k) + '_labels.pickle'
         with open(file_name, 'wb') as handle:
             pickle.dump(dicts, handle)
 
