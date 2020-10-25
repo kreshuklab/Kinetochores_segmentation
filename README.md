@@ -93,3 +93,8 @@ In temporal vols, raw data: [48,128,128,3] and labels: [48,128,128] - only the c
 
 ## Another thing to try:
 Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
+
+### In progress:
+Harmonic embeddings network are based on 2d datasets -> quick trial with 2d slices for kinetochores data
+
+
