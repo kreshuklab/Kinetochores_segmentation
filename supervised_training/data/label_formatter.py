@@ -19,67 +19,73 @@ import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument('annotation_csv', default='', help="Path to annotation csv file") # embldata/Zygote112.csv'
 
-def simplify_annotations(annotation_csv):
-    """
-    annotation_csv: The original annotation file with all the annotations
-    """
 
-    annotation_file = pd.read_csv(annotation_csv)
-    
-    # Extract column names
-    tags = annotation_file['Tags']
+class LabelFormatter:
+    """LabelFormatter class"""
 
-    # Center of mass coordinates in X, Y, Z
-    tags_list = list(tags)
-    Xpx = list(annotation_file['X (px), Center of Mass (Intensities) #1'])
-    Ypx = list(annotation_file['Y (px), Center of Mass (Intensities) #1'])
-    Zpx = list(annotation_file['Z (px), Center of Mass (Intensities) #1'])
+    def __init__(self):
+        pass
 
-    # All the elements are considered individual sources
-    # store individual elemnt num as PairN_1 / PairN_2 in pair_num_list
-    pair_num_list = []
+    def simplify_annotations(self, annotation_csv):
+        """
+        annotation_csv: The original annotation file with all the annotations
+        """
 
-    for each_tag in tags_list:
-        pair_num = each_tag.split('.')[2].strip()
-        pair_num_list.append(pair_num)
+        annotation_file = pd.read_csv(annotation_csv)
 
-    return pair_num_list, Xpx, Ypx, Zpx
+        # Extract column names
+        tags = annotation_file['Tags']
 
-def pickle_creator(pair_num_list, Xpx, Ypx, Zpx):
+        # Center of mass coordinates in X, Y, Z
+        tags_list = list(tags)
+        xpx = list(annotation_file['X (px), Center of Mass (Intensities) #1'])
+        ypx = list(annotation_file['Y (px), Center of Mass (Intensities) #1'])
+        zpx = list(annotation_file['Z (px), Center of Mass (Intensities) #1'])
 
-    """
-    pair_num_list: The individual element list
-    Xpx: x coord values
-    Ypx: y coord values
-    Zpx: z coord values
-    """
+        # All the elements are considered individual sources
+        # store individual elemnt num as PairN_1 / PairN_2 in pair_num_list
+        pair_num_list = []
 
-    # dict_list: 
-    timeframes = 18
-    dict_list = []
+        for each_tag in tags_list:
+            pair_num = each_tag.split('.')[2].strip()
+            pair_num_list.append(pair_num)
 
-    # for each timestep, create the dict with 
-    # key as element num and values as coordinates
+        return pair_num_list, xpx, ypx, zpx
 
-    for filenum in range(timeframes):
+    def pickle_creator(self, pair_num_list, xpx, ypx, zpx):
 
-        temp_dict = {}
-        for j, pair in enumerate(pair_num_list):
-            if pair in temp_dict.keys():
-                continue
-            else:
-                temp_dict[pair] = [Xpx[j], Ypx[j], Zpx[j]]
-                del pair_num_list[j]
-                del Xpx[j]
-                del Ypx[j]
-                del Zpx[j]
-        dict_list.append(temp_dict)
+        """
+        pair_num_list: The individual element list
+        Xpx: x coord values
+        Ypx: y coord values
+        Zpx: z coord values
+        """
 
-    # Store the dicts as pickles per timestep
-    for k, dicts in enumerate(dict_list):
-        file_name = 'Vol_' + str(k) + '_labels.pickle'
-        with open(file_name, 'wb') as handle:
-            pickle.dump(dicts, handle)
+        timeframes = 18
+        dict_list = []
+
+        # for each timestep, create the dict with 
+        # key as element num and values as coordinates
+
+        for filenum in range(timeframes):
+
+            temp_dict = {}
+            for pnum_id, pair in enumerate(pair_num_list):
+                if pair in temp_dict.keys():
+                    continue
+                else:
+                    temp_dict[pair] = [xpx[pnum_id], ypx[pnum_id], zpx[pnum_id]]
+                    del pair_num_list[pnum_id]
+                    del xpx[pnum_id]
+                    del ypx[pnum_id]
+                    del zpx[pnum_id]
+            dict_list.append(temp_dict)
+
+        # Store the dicts as pickles per timestep
+        for k, dicts in enumerate(dict_list):
+            file_name = 'Vol_' + str(k) + '_labels.pickle'
+            with open(file_name, 'wb') as handle:
+                pickle.dump(dicts, handle)
 
 
 if __name__ == '__main__':
@@ -87,5 +93,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     annotations_path = args.annotation_csv
 
-    num_list, Xpx, Ypx, Zpx = simplify_annotations(annotations_path)
-    pickle_creator(num_list, Xpx, Ypx, Zpx)
+    label_formatter = LabelFormatter()
+    num_list, xpx, ypx, zpx = label_formatter.simplify_annotations(annotations_path)
+    label_formatter.pickle_creator(num_list, xpx, ypx, zpx)
