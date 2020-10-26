@@ -10,7 +10,7 @@ from scipy import ndimage
 parser = argparse.ArgumentParser()
 parser.add_argument('egfp_dir', default='', help='Path to EGFP files directory')
 parser.add_argument('mcherry_dir', default='', help='Path to mcherry files directory')
-
+parser.add_argument('n_channel', default='', help='number of channels for the vol')
 
 
 # prefix_mc = '/home/samudre/embldata/mcherry/dt/'
@@ -109,3 +109,12 @@ class NchannelCreator:
                 channel_6_file.create_dataset('raw', data=concat_raw_norm)
                 channel_6_file.create_dataset('label', data=label_thresh_tr)
                 channel_6_file.close()
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    egfp_dir = args.egfp_dir
+    mcherry_dir = args.mcherry_dir
+    n_channel = args.n_channel
+
+    vol_creator = NchannelCreator()
+    vol_creator.raw_formatter(egfp_dir, mcherry_dir, n_channel)
