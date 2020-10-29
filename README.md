@@ -91,12 +91,23 @@ Results with normal vols and temporal vols.
 In normal vols, raw and labels: [48,128,128]
 In temporal vols, raw data: [48,128,128,3] and labels: [48,128,128] - only the centre vol label.
 
-## Another thing to try:
+
+## Update  24/10:
+New metric for matching the prediction peaks with the dilated labels implemented in training. the metric returns the number of peaks matched.
+
+
+## Update 28/10:
+The actual useful IoU metric implemented. Taking threshold of predictions, getting local peaks -> dilate the peaks, remove the peaks below threshold.
+
+
+### WIP:
+1. Train all the experiments with this new IoU metric.
+2. Optimize the NMS thresholds in stardist
+
+
+## Another thing to try (let's keep this aside for now):
 Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
-
-### In progress:
-Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data
-
+Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data. (Not really useful)
 In fact, let's try -> 2.[Single cell](https://github.com/opnumten/single_cell_segmentation) and 3.[Spatial embeddings](https://github.com/davyneven/SpatialEmbeddings) both on 2d slices for our data.
 
 
