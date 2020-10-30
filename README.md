@@ -100,8 +100,16 @@ New metric for matching the prediction peaks with the dilated labels implemented
 The actual useful IoU metric implemented. Taking threshold of predictions, getting local peaks -> dilate the peaks, remove the peaks below threshold.
 
 
-### WIP:
-1. Train all the experiments with this new IoU metric.
+## Update 30/10:
+1. Train all the experiments with this new IoU metric. - the metric results are not really great, which is expected. Move to soft IoU or mAP.
+2. Single channel working better than temporal thing, basically we are getting much dense predictions and higher num of output peaks.
+
+## WIP:
+1. Let's try the 2 channel setup with new postprocessing.
+2. Need the soft IoU or mAP running.
+3. Prepare the complete pipeline starting with the input vol and final segmentation output.
+
+## ToDo:
 2. Optimize the NMS thresholds in stardist
 
 
