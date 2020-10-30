@@ -6,6 +6,7 @@ from scipy import ndimage
 
 from skimage import feature
 from skimage.filters import threshold_otsu
+from skimage.morphology import watershed
 
 import cc3d
 
@@ -30,13 +31,15 @@ class ThresholdMatching:
         foreground = predictions > global_thresh
 
         # get the local peaks from the predictions
-        local_max = skimage.feature.peak_local_max(predictions[0], min_distance=5)
+        local_max = skimage.feature.peak_local_max(predictions[0], min_distance=2)
 
         # prepare the vol with peaks
         local_peaks_vol = np.zeros((1, 48, 128, 128))
 
-        for coordinate in local_max:
-            local_peaks_vol[0][coordinate[0], coordinate[1], coordinate[2]] = 1.0
+        # apply ids instead of 1 by enumerating
+        # This labels the peaks as individual instances in the vol
+        for idx, coordinate in enumerate(local_max):
+            local_peaks_vol[0][coordinate[0], coordinate[1], coordinate[2]] = idx+1
 
         # dilate the peaks
         inv_local_peaks_vol = np.logical_not(local_peaks_vol)
@@ -44,13 +47,19 @@ class ThresholdMatching:
         # get distance transform
         local_peaks_edt = ndimage.distance_transform_edt(inv_local_peaks_vol)
 
+
         # threshold the edt and invert back: fg as 1, bg as 0
-        spherical_labels = local_peaks_edt > 3
+        spherical_labels = local_peaks_edt > 2
+
+
         spherical_labels = np.logical_not(spherical_labels).astype(np.float64)
 
         # get the outliers based on threshold and set zero
         outliers = np.where(spherical_labels != foreground)
         spherical_labels[outliers] = 0
+
+        # apply watershed
+        # 
 
         return spherical_labels
 
@@ -75,3 +84,13 @@ class ThresholdMatching:
         instances_vol = h5py.File('peak_instances.h5', 'w')
         instances_vol.create_dataset('peaks', data=instances)
         instances_vol.close()
+
+    def watershed_instances(self, spherical_labels):
+        """
+        :spherical_labels: output prediction dilated peaks to be labeled individually
+
+        """
+        spherical_peaks = self.thresholding(predictions)
+        watershed_output = watershed(spherical_peaks, local_peaks_vol, mask=spherical_peaks)
+
+        return watershed_output
