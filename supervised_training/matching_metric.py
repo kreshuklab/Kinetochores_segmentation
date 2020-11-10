@@ -14,7 +14,7 @@ import copy
 
 class MatchingMetric:
 
-    def create_instances(input_gt, predictions_file):
+    def create_instances(self, input_gt, predictions_file):
     	# load ground truth
     	gt_labels = h5py.File(input_gt,'r')['label']
 
@@ -60,10 +60,11 @@ class MatchingMetric:
 
 # print(len(np.where(watershed_output[0]!=0)[0]))
 
-    def matching():
+    def matching(self, local_max, instance_output):
         wshed_peaks = []
         wshed = np.where(watershed_output[0]!=0)
 
+        # prepare the wshed_peaks list 
         for wid, wval in enumerate(wshed[0]):
         	wshed_peaks.append([wshed[0][wid], wshed[1][wid], wshed[2][wid]])
 
@@ -111,10 +112,10 @@ class MatchingMetric:
         	else:
         		fn_count += 1
 
-        print(len(intersection_peaks))
-        print(tp_count)
+        print('Prediction peaks after thresholding: ' + len(intersection_peaks))
+        print('Matched GT and peaks (TP): ' + tp_count)
 
-        print(fn_count)
+        print('GT not matched with predictions (FN): ' + fn_count)
 
         eval_dict = {}
 
