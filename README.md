@@ -104,14 +104,18 @@ The actual useful IoU metric implemented. Taking threshold of predictions, getti
 1. Train all the experiments with this new IoU metric. - the metric results are not really great, which is expected. Move to soft IoU or mAP.
 2. Single channel working better than temporal thing, basically we are getting much dense predictions and higher num of output peaks.
 
-## WIP:
-1. Let's try the 2 channel setup with new postprocessing.
-2. Need the soft IoU or mAP running.
-3. Prepare the complete pipeline starting with the input vol and final segmentation output.
+
+1. Optimize the NMS thresholds in stardist - Done.
+2. Eval metric done with segmentation output reaching 69 TP, 10 FN and 17 FP, which is good for temporal vol 5 (label vol 13).
 
 ## ToDo:
-2. Optimize the NMS thresholds in stardist
+1. Regression postprocessing involves either a) take the prediction output -> apply gaussian filter and take minima, get watershed and matching. b) Invert the output and apply gaussian filter and proceed with segmentation like postprocessing.
+2. Get the StarDist output -> F1 score.
 
+
+## WIP:
+2. Need the soft IoU or mAP running.
+3. Prepare the complete pipeline starting with the input vol and final segmentation output.
 
 ## Another thing to try (let's keep this aside for now):
 Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
