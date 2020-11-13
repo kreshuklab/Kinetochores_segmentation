@@ -107,10 +107,14 @@ The actual useful IoU metric implemented. Taking threshold of predictions, getti
 
 1. Optimize the NMS thresholds in stardist - Done.
 2. Eval metric done with segmentation output reaching 69 TP, 10 FN and 17 FP, which is good for temporal vol 5 (label vol 13).
+3. Regression postprocessing involves either a) take the prediction output -> apply gaussian filter and take minima, get watershed and matching. b) Invert the output and apply gaussian filter and proceed with segmentation like postprocessing. - Done
 
 ## ToDo:
-1. Regression postprocessing involves either a) take the prediction output -> apply gaussian filter and take minima, get watershed and matching. b) Invert the output and apply gaussian filter and proceed with segmentation like postprocessing.
 2. Get the StarDist output -> F1 score.
+
+## Update 13/11:
+1. Temporal dice loss added.
+2. TODO: Add distribution learning loss
 
 
 ## WIP:
