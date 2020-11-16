@@ -170,6 +170,40 @@ class TemporalDiceLoss(_AbstractDiceLoss):
         g_target = self.smoothing(target)
         return compute_per_channel_dice(g_input, g_target, weight=self.weight) + compute_loss_time_dice(input)
 
+def compute_distribution_loss(input):
+    all_logits = []
+    for cur_idx in range(input.shape[0]):
+        all_logits.append(input[cur_idx])
+
+    all_loss = 0
+    for idx in range(len(all_logits) - 1):
+        all_loss += compute_distribution(all_logits[idx], all_logits[idx + 1], smooth=1)
+    return all_loss
+
+
+def compute_distribution(logits1, logits2):
+    iflat = logits1.flatten()
+    tflat = logits2.flatten()
+
+    mean1 = np.mean(iflat)
+    mean2 = np.mean(tflat)
+
+    std1 = np.std(iflat)
+    std2 = np.std(tflat)
+
+    return np.sqrt((mean2 - mean1)**2 + (std2 - std1)**2)
+
+# Currently avoiding gaussian during the distribution comparison loss
+# mainly to avoid any bias addition
+
+class TemporalDistributionLoss(_AbstractDiceLoss):
+    def __init__(self, weight=None, sigmoid_normalization=True):
+        super().__init__(weight, sigmoid_normalization)
+        #self.smoothing = GaussianSmoothing(1, 7, 2, 3).to('cuda')
+
+    def distloss(self, input, target, weight):
+        return compute_distribution_loss(input)
+
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.
     """
