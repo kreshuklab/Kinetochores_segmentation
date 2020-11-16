@@ -176,6 +176,76 @@ class PeakMatching:
         print(n_count)
         return torch.tensor(n_count)
 
+
+class Thresh_IoU:
+    """
+    Computes IoU for each class separately and then averages over all classes.
+    """
+
+    def __init__(self, skip_channels=(), ignore_index=None, **kwargs):
+        """
+        :param skip_channels: list/tuple of channels to be ignored from the IoU computation
+        :param ignore_index: id of the label to be ignored from IoU computation
+        """
+        self.ignore_index = ignore_index
+        self.skip_channels = skip_channels
+
+    def __call__(self, input, target):
+        """
+        :param input: 5D probability maps torch float tensor (NxCxDxHxW)
+        :param target: 4D or 5D ground truth torch tensor. 4D (NxDxHxW) tensor will be expanded to 5D as one-hot
+        :return: intersection over union averaged over all channels
+        """
+        assert input.dim() == 5
+
+        predictions, target = convert_to_numpy(input, target)
+        predictions = predictions[0]
+
+        # global otsu threshold on the predictions
+        global_thresh = threshold_otsu(predictions)
+
+        low_intensity_region = np.where(predictions < global_thresh)
+
+        predictions = np.array(predictions)[low_intensity_region = 0]
+        predictions = np.expand_dims(predictions, axis=0)
+
+        target = torch.tensor(target)
+
+        n_classes = input.size()[1]
+
+        if target.dim() == 4:
+            target = expand_as_one_hot(target, C=n_classes, ignore_index=self.ignore_index)
+
+        assert predictions.size() == target.size()
+
+        per_batch_iou = []
+        for _input, _target in zip(predictions, target):
+            binary_prediction = self._binarize_predictions(_input, n_classes)
+
+            if self.ignore_index is not None:
+                # zero out ignore_index
+                mask = _target == self.ignore_index
+                binary_prediction[mask] = 0
+                _target[mask] = 0
+
+            # convert to uint8 just in case
+            binary_prediction = binary_prediction.byte()
+            _target = _target.byte()
+
+            per_channel_iou = []
+            for c in range(n_classes):
+                if c in self.skip_channels:
+                    continue
+
+                per_channel_iou.append(self._jaccard_index(binary_prediction[c], _target[c]))
+
+            assert per_channel_iou, "All channels were ignored from the computation"
+            mean_iou = torch.mean(torch.tensor(per_channel_iou))
+            per_batch_iou.append(mean_iou)
+
+        return torch.mean(torch.tensor(per_batch_iou))
+
+
 class Peaks_IoU:
     """
     Computes IoU for each class separately and then averages over all classes.
