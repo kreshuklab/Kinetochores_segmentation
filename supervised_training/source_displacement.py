@@ -52,7 +52,7 @@ class SourceDisplacement:
 				xlist.append(coord_vals[0])
 				ylist.append(coord_vals[1])
 				zlist.append(coord_vals[2])
-			deviation_dir[k] = (np.std(xlist), np.std(ylist), np.std(zlist))
+			deviation_dir[key] = (np.std(xlist), np.std(ylist), np.std(zlist))
 
 		return deviation_dir
 
