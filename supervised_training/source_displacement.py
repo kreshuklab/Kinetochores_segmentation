@@ -57,6 +57,29 @@ class SourceDisplacement:
 		return deviation_dir
 
 	@staticmethod
+	def get_movement(coordinates_dir):
+
+		x_movement = {}
+		y_movement = {}
+		z_movement = {}
+
+		for key, val in coordinates_dir.items():
+			for coord_vals in val:
+				if key not in x_movement.keys():
+					x_movement[key] = []
+					x_movement[key].append(coord_vals[0])
+					y_movement[key] = []
+					y_movement[key].append(coord_vals[1])
+					z_movement[key] = []
+					z_movement[key].append(coord_vals[2])
+				else:
+					x_movement[key].append(coord_vals[0])
+					y_movement[key].append(coord_vals[1])
+					z_movement[key].append(coord_vals[2])
+
+		return x_movement, y_movement, z_movement
+
+	@staticmethod
 	def get_neighborhood(deviation_dir):
 		"""
 		Get the mean displacement in x, y and z
@@ -73,6 +96,8 @@ class SourceDisplacement:
 			zdisp.append(val[2])
 
 		return np.mean(xdisp), np.mean(ydisp), np.mean(zdisp)
+
+
 
 	def show_displacement(self, deviation_dir):
 		"""
