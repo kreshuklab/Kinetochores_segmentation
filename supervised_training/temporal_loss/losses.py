@@ -197,10 +197,12 @@ def compute_distribution(logits1, logits2):
 class TemporalDistributionLoss(_AbstractDiceLoss):
     def __init__(self, weight=None, sigmoid_normalization=True):
         super().__init__(weight, sigmoid_normalization)
-        #self.smoothing = GaussianSmoothing(1, 7, 2, 3).to('cuda')
+        self.smoothing = GaussianSmoothing(1, 7, 2, 3).to('cuda')
 
-    def distloss(self, input, target, weight):
-        return compute_per_channel_dice(input, target, weight=self.weight) + compute_distribution_loss(input)
+    def dice(self, input, target, weight):
+        g_input = self.smoothing(input)
+        g_target = self.smoothing(target)
+        return compute_per_channel_dice(g_input, g_target, weight=self.weight) + compute_distribution_loss(input)
 
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.
