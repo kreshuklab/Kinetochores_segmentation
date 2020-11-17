@@ -191,7 +191,7 @@ def compute_distribution(logits1, logits2):
     std1 = torch.std(iflat)
     std2 = torch.std(tflat)
 
-    return torch.sqrt((mean2 - mean1)**2 + (std2 - std1)**2)
+    return torch.sqrt((mean1 - mean2)**2 + (std1 - std2)**2)
 
 
 class TemporalDistributionLoss(_AbstractDiceLoss):
