@@ -185,16 +185,14 @@ def compute_distribution(logits1, logits2):
     iflat = logits1.flatten()
     tflat = logits2.flatten()
 
-    mean1 = np.mean(iflat)
-    mean2 = np.mean(tflat)
+    mean1 = torch.mean(iflat)
+    mean2 = torch.mean(tflat)
 
-    std1 = np.std(iflat)
-    std2 = np.std(tflat)
+    std1 = torch.std(iflat)
+    std2 = torch.std(tflat)
 
-    return np.sqrt((mean2 - mean1)**2 + (std2 - std1)**2)
+    return torch.sqrt((mean2 - mean1)**2 + (std2 - std1)**2)
 
-# Currently avoiding gaussian during the distribution comparison loss
-# mainly to avoid any bias addition
 
 class TemporalDistributionLoss(_AbstractDiceLoss):
     def __init__(self, weight=None, sigmoid_normalization=True):
@@ -202,7 +200,7 @@ class TemporalDistributionLoss(_AbstractDiceLoss):
         #self.smoothing = GaussianSmoothing(1, 7, 2, 3).to('cuda')
 
     def distloss(self, input, target, weight):
-        return compute_distribution_loss(input)
+        return compute_per_channel_dice(input, target, weight=self.weight) + compute_distribution_loss(input)
 
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.

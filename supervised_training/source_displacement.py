@@ -58,6 +58,9 @@ class SourceDisplacement:
 
 	@staticmethod
 	def get_movement(coordinates_dir):
+		"""
+		Record the movement at each timestep for all sources
+		"""
 
 		x_movement = {}
 		y_movement = {}
