@@ -1,7 +1,3 @@
-"""
-Routine to dilate ground truth at runtime
-"""
-
 import glob
 import os
 import copy
@@ -135,8 +131,38 @@ class AbstractHDF5Dataset(ConfigDataset):
 
                 self.raws = padded_volumes
 
-        # Modify only the train vol ground truth for dilation and thus better context
-        if phase == 'train':
+        # for Thresh_IoU eval metric
+        # if phase != 'test':
+
+        ###### temporal batch passing channel setup
+
+        # # Modify only the train vol ground truth for dilation and thus better context
+        # if phase != 'test': # for peak matching eval metric
+        #     self.dilation_list = copy.deepcopy(self.labels)
+        #     self.dilated_labels = []
+
+        #     # apply dilation to each vol in the batch
+        #     for each_vol in self.dilation_list:
+        #         self.label_dilate = each_vol
+
+        #         self.vol_channels = []
+
+        #         for channel_num, ch in enumerate(self.label_dilate):
+        #             self.inv_label = np.logical_not(self.label_dilate[channel_num])
+        #             self.label_dist_transform = ndimage.distance_transform_edt(self.inv_label)
+        #             self.label_thresh_tr = self.label_dist_transform > 2
+
+        #             self.label_thresh_tr = np.logical_not(self.label_thresh_tr).astype(np.float64)
+                    
+        #             self.vol_channels.append(self.label_thresh_tr)
+
+        #         self.output_thresh_tr = torch.concatenate((self.vol_channels[0], self.vol_channels[1], self.vol_channels[2]), axis=0)
+
+        #         self.dilated_labels.append(self.output_thresh_tr)
+
+        #     self.labels = self.dilated_labels
+
+        if phase == '!test':
             self.dilation_list = copy.deepcopy(self.labels)
             self.dilated_labels = []
             for each_vol in self.dilation_list:
@@ -149,6 +175,7 @@ class AbstractHDF5Dataset(ConfigDataset):
                 self.dilated_labels.append(self.label_thresh_tr)
 
             self.labels = self.dilated_labels
+
 
         # build slice indices for raw and label data sets
         slice_builder = get_slice_builder(self.raws, self.labels, self.weight_maps, slice_builder_config)
