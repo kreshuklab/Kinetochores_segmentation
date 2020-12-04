@@ -1,6 +1,7 @@
 import importlib
 
 import torch.nn as nn
+import torch.nn.functional as F
 
 from pytorch3dunet.unet3d.buildingblocks import Encoder, Decoder, DoubleConv, ExtResNetBlock
 from pytorch3dunet.unet3d.utils import number_of_features_per_level
@@ -100,7 +101,11 @@ class Abstract3DUNet(nn.Module):
 
         # in the last layer a 1×1 convolution reduces the number of output
         # channels to the number of labels
-        self.final_conv = nn.Conv3d(f_maps[0], out_channels, 1)
+        #self.final_conv = nn.Conv3d(f_maps[0], out_channels, 1)
+
+        self.conv1 = nn.Conv3d(f_maps[0], 8, 3, padding=1)
+        self.conv2 = nn.Conv3d(8, 4, 3, padding=1)
+        self.conv3 = nn.Conv3d(4, out_channels, 1)
 
         if is_segmentation:
             # semantic segmentation problem
@@ -111,8 +116,6 @@ class Abstract3DUNet(nn.Module):
         else:
             # regression problem
             self.final_activation = None
-            # self.final_activation = nn.Tanh()
-            # self.final_activation = nn.Sigmoid()
 
     def forward(self, x):
         # encoder part
@@ -132,8 +135,16 @@ class Abstract3DUNet(nn.Module):
             # of the previous decoder
             x = decoder(encoder_features, x)
 
-        x1 = self.final_conv(x)
-        x2 = self.final_conv(x)
+        # x1 = self.final_conv(x)
+        # x2 = self.final_conv(x)
+
+        x1 = F.relu(self.conv1(x))
+        x1 = F.relu(self.conv2(x1))
+        x1 = F.relu(self.conv3(x1))
+
+        x2 = F.relu(self.conv1(x))
+        x2 = F.relu(self.conv2(x2))
+        x2 = F.relu(self.conv3(x2))
 
         # apply final_activation (i.e. Sigmoid or Softmax) only during prediction. During training the network outputs
         # logits and it's up to the user to normalize it before visualising with tensorboard or computing validation metric
