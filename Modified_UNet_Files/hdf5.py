@@ -17,6 +17,10 @@ logger = get_logger('HDF5Dataset')
 lock = Lock()
 
 
+##############################################################
+########################## REVIEW ############################
+##############################################################
+
 class AbstractHDF5Dataset(ConfigDataset):
     """
     Implementation of torch.utils.data.Dataset backed by the HDF5 files, which iterates over the raw and label datasets
@@ -220,6 +224,10 @@ class AbstractHDF5Dataset(ConfigDataset):
                 return raw_patch_transformed, label_patch_transformed_seg, label_patch_transformed_reg, weight_patch_transformed
             # return the transformed raw and label patches
             return raw_patch_transformed, label_patch_transformed_seg, label_patch_transformed_reg
+
+##############################################################
+##############################################################
+
 
     @staticmethod
     def _transform_patches(datasets, label_idx, transformer):
