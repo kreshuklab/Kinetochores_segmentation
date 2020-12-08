@@ -1,0 +1,6 @@
+Routine:
+Data Loading - hdf5.py: utils.py
+Model - model.py (multihead function, defining 2 heads in init for model)
+Losses - losses.py (multihead loss: combining the segmenatation and regression loss)
+Metric - Currently combining the MeanIoU and RMSE
+Trainer and Predictor - Get 2 outputs and not applying final activation (passing final activation as None in config)
