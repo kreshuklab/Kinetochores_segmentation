@@ -8,10 +8,10 @@ authors:
 
 # we allow for multiple citations. Each citation contains TEXT, DOI and URL. One of DOI or URL needs to be given.
 cite:
-  - text: "Ronneberger, Olaf et al. U-net: Convolutional networks for biomedical image segmentation. MICCAI 2015."
-    doi: https://doi.org/10.1007/978-3-319-24574-4_28
-  - text: "2018 Data Science Bowl"
-    url: https://www.kaggle.com/c/data-science-bowl-2018
+  - text: "Wolny, Cerrone et al. Accurate And Versatile 3D Segmentation Of Plant Tissues At Cellular Resolution. elife."
+    doi: https://doi.org/10.1101/2020.01.17.910562
+  - text: "PyTorch-3DUNet"
+    url: https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562
 
 git_repo: https://github.com/bioimage-io/pytorch-bioimage-io/tree/master/specs/models/unet3d_kinetochores
 tags: [unet3d, pytorch, kinetochores, segmentation]
@@ -56,7 +56,7 @@ outputs:
 
 language: python
 framework: pytorch
-source: pybio.torch.models.unet3d_kinetochores.UNet3D
+source: pybio.torch.models.UNet3D_Kinetochores_1ch.UNet3D
 kwargs: {input_channels: 1, output_channels: 1}
 dependencies: conda:../environment.yaml
 
