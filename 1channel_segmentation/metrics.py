@@ -24,7 +24,7 @@ from pytorch3dunet.unet3d.utils import get_logger, expand_as_one_hot, plot_segm,
 logger = get_logger('EvalMetric')
 
 
-def thresh_local(predictions):
+def thresh_local(predictions, min_distance):
 
 	global_thresh = threshold_otsu(predictions)
 
@@ -40,36 +40,33 @@ def thresh_local(predictions):
 	for coordinate in local_max:
 		local_peaks_vol[0][coordinate[0], coordinate[1], coordinate[2]] = 1.0
 
+	return foreground, local_peaks_vol
 
-def create_instances(self, input_gt, predictions_file):
+
+def dilation_routine(local_peaks_vol, dilation_threshold):
+	inv_local_peaks_vol = np.logical_not(local_peaks_vol)
+	dist_tr = ndimage.distance_transform_edt(inv_local_peaks_vol)
+
+	thresh_tr = dist_tr > dilation_threshold
+
+	thresh_temp = np.logical_not(thresh_tr).astype(np.float64)
+
+	return thresh_temp
+
+
+def create_instances(self, input_gt, predictions_file, min_distance, dilation_threshold):
 	# load ground truth
 	gt_labels = h5py.File(input_gt,'r')['label']
 
 	# load predictions
 	predictions = h5py.File(predictions_file,'r')['predictions']
 
-	# Take otsu threshold
-	global_thresh = threshold_otsu(predictions[0])
+	predictions = predictions[0]
 
-	foreground = predictions > global_thresh
-
-	# Get the local max
-	local_max = skimage.feature.peak_local_max(predictions[0], min_distance=2)
-
-	# Prepare the vol with peaks
-	temp_max = np.zeros((1,48,128,128))
-
-	for i, each in enumerate(local_max):
-		temp_max[0][each[0], each[1], each[2]] = i+1
-
+	foreground, local_peaks_vol = thresh_local(predictions, min_distance)
 
 	# Dilate the peaks
-	inv_temp_max = np.logical_not(temp_max)
-	dist_tr = ndimage.distance_transform_edt(inv_temp_max)
-
-	thresh_tr = dist_tr > 2
-
-	thresh_temp = np.logical_not(thresh_tr).astype(np.float64)
+	thresh_temp = dilation_routine(local_peaks_vol, dilation_threshold)
 
 	extra = np.where(thresh_temp != foreground)
 
@@ -79,109 +76,28 @@ def create_instances(self, input_gt, predictions_file):
 	# Take intersection of local max and the watershed output peaks 
 	###################
 
-	watershed_output = watershed(thresh_temp, temp_max, mask=thresh_temp).astype(np.uint16)
+	watershed_output = watershed(thresh_temp, local_peaks_vol, mask=thresh_temp).astype(np.uint16)
 
-    return watershed_output
+	return watershed_output
 
 
-def match_routine(intersection_peaks, peak_set_a, peak_set_b, neighbor_threshold):
+def match_routine(peak_set_a, peak_set_b, neighbor_threshold):
 	eval_dict = {}
 	for id1, coord_a in enumerate(peak_set_a):
-    	z_pos_a, y_pos_a, x_pos_a = coord_a[0], coord_a[1], coord_a[2]
-    	eval_dict[(z_pos_a, y_pos_a, x_pos_a)] = {}
+		z_pos_a, y_pos_a, x_pos_a = coord_a[0], coord_a[1], coord_a[2]
+		eval_dict[(z_pos_a, y_pos_a, x_pos_a)] = {}
 
-    	for id2, coord_b in enumerate(intersection_peaks):
-    		z_pos_b, y_pos_b, x_pos_b = coord_b[0], coord_b[1], coord_b[2]
+		for id2, coord_b in enumerate(peak_set_b):
+			z_pos_b, y_pos_b, x_pos_b = coord_b[0], coord_b[1], coord_b[2]
 
-    		std_euc = distance.seuclidean([z_pos_a, y_pos_a, x_pos_a], [z_pos_b, y_pos_b, x_pos_b], [3.0,1.3,1.3])
+			std_euc = distance.seuclidean([z_pos_a, y_pos_a, x_pos_a], [z_pos_b, y_pos_b, x_pos_b], [3.0,1.3,1.3])
 
-    		if std_euc <= neighbor_threshold:
-    			instance_label = watershed_output[0][wshed_peaks[id2][0]][wshed_peaks[id2][1]][wshed_peaks[id2][2]]
-    			#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
-    			eval_dict[z_pos_a, y_pos_a, x_pos_a][(z_pos_b, y_pos_b, x_pos_b)] = std_euc
+			if std_euc <= neighbor_threshold:
+				instance_label = watershed_output[0][wshed_peaks[id2][0]][wshed_peaks[id2][1]][wshed_peaks[id2][2]]
+				#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
+				eval_dict[z_pos_a, y_pos_a, x_pos_a][(z_pos_b, y_pos_b, x_pos_b)] = std_euc
 
-    return eval_dict
-
-
-def matching(self, local_max, instance_output):
-	tp_count = 0
-	fp_count = 0
-	fn_count = 0
-    wshed_peaks = []
-    wshed = np.where(watershed_output[0]!=0)
-
-    # prepare the wshed_peaks list 
-    for wid, wval in enumerate(wshed[0]):
-    	wshed_peaks.append([wshed[0][wid], wshed[1][wid], wshed[2][wid]])
-
-    intersection_peaks = []
-    for each in local_max:
-        z,y,x = each[0], each[1], each[2]
-        for ws in wshed_peaks:
-            wsz, wsy, wsx = ws[0], ws[1], ws[2]
-            if z == wsz and y == wsy and x == wsx:
-                intersection_peaks.append(ws)
-
-    gt_foreground = np.where(gt_labels[0]==1.0)
-    gt_coords = []
-
-    for idx, val in enumerate(gt_foreground[0]):
-        gt_coords.append([gt_foreground[0][idx], gt_foreground[1][idx], gt_foreground[2][idx]])
-
-    eval_dict = {}
-
-    for gtc in gt_coords:
-    	gt_z, gt_y, gt_x = gtc[0], gtc[1], gtc[2]
-    	eval_dict[(gt_z, gt_y, gt_x)] = {}
-
-    	for a, peak in enumerate(intersection_peaks):
-    		z, y, x = peak[0], peak[1], peak[2]
-
-    		std_euc = distance.seuclidean([gt_z, gt_y, gt_x], [z,y,x], [3.0,1.3,1.3])
-
-    		if std_euc <= 6.0:
-    			instance_label = watershed_output[0][wshed_peaks[a][0]][wshed_peaks[a][1]][wshed_peaks[a][2]]
-    			#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
-    			eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = std_euc
-
-    for k1, v1 in eval_dict.items():
-    	if v1 != {}:
-    		tp_count += 1
-    		v1sorted = {k:v for k,v in sorted(v1.items(), key=lambda item: item[1])}
-    		#print(k1, v1sorted)
-    	else:
-    		fn_count += 1
-
-    print('Prediction peaks after thresholding: ' + len(intersection_peaks))
-    print('Matched GT and peaks (TP): ' + tp_count)
-
-    print('GT not matched with predictions (FN): ' + fn_count)
-
-    eval_dict = {}
-
-    for a, peak in enumerate(intersection_peaks):
-    	z, y, x = peak[0], peak[1], peak[2]
-    	eval_dict[(z, y, x)] = {}
-
-    	for gtc in gt_coords:
-    		gt_z, gt_y, gt_x = gtc[0], gtc[1], gtc[2]
-
-    		std_euc = distance.seuclidean([z,y,x], [gt_z, gt_y, gt_x], [3.0,1.3,1.3])
-
-    		if std_euc <= 6.0:
-    			#instance_label = watershed_output[0][wshed_peaks[a][0]][wshed_peaks[a][1]][wshed_peaks[a][2]]
-    			#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
-    			eval_dict[z, y, x][(gt_z,gt_y,gt_x)] = std_euc
-
-    for k1, v1 in eval_dict.items():
-    	if v1 != {}:
-    		#tp_count += 1
-    		v1sorted = {k:v for k,v in sorted(v1.items(), key=lambda item: item[1])}
-    	else:
-    		fp_count += 1
-
-    print(tp_count)
-    print(fp_count)
+	return eval_dict
 
 
 class DiceCoefficient:
@@ -313,23 +229,7 @@ class PeakMatching:
 		eval_dict = {}
 
 		# Matching procedure
-
-		eval_dict = match_routine(intersection_peaks, local_max, foreground_coords)
-
-		# for coord in local_max:
-		# 	z, y, x = coord[0], coord[1], coord[2]
-		# 	eval_dict[(z,y,x)] = {}
-
-		# 	for coord in foreground_coords:
-		# 		gt_z, gt_y, gt_x = coord[0], coord[1], coord[2]
-
-		# 		# Taking anisotropy into account
-		# 		std_euc = distance.seuclidean([z,y,x], [gt_z, gt_y, gt_x], [3.0,1.3,1.3])
-
-		# 		# Keeping a threshold for matching
-		# 		# Threshold is hyperparam
-		# 		if std_euc <= neighbor_threshold:
-		# 			eval_dict[(z,y,x)][gt_z, gt_y, gt_x] = std_euc
+		eval_dict = match_routine(local_max, foreground_coords, neighbor_threshold)
 
 		for eval_key, eval_val in eval_dict.items():
 			if eval_val != {}:
@@ -475,14 +375,7 @@ class Peaks_IoU:
 			local_peaks_vol[0][coordinate[0], coordinate[1], coordinate[2]] = 1.0
 
 		# dilate the peaks
-		inv_local_peaks_vol = np.logical_not(local_peaks_vol)
-
-		# get distance transform
-		local_peaks_edt = ndimage.distance_transform_edt(inv_local_peaks_vol)
-
-		# threshold the edt and invert back: fg as 1, bg as 0
-		spherical_peaks = local_peaks_edt > 3
-		spherical_peaks = np.logical_not(spherical_peaks).astype(np.float64)
+		spherical_peaks = dilation_routine(local_peaks_vol, dilation_threshold=3)
 
 		# get the outliers based on threshold and set zero
 		outliers = np.where(spherical_peaks != foreground)
@@ -582,13 +475,7 @@ class instance_count:
 		for i, each in enumerate(local_max):
 			temp_max[0][each[0], each[1], each[2]] = i+1
 
-		inv_temp_max = np.logical_not(temp_max)
-		dist_tr = ndimage.distance_transform_edt(inv_temp_max)
-
-		# Thresh val.
-		thresh_tr = dist_tr > threshold_val
-
-		thresh_temp = np.logical_not(thresh_tr).astype(np.float64)
+		thresh_temp = dilation_routine(temp_max, threshold_val=2)
 
 		extra = np.where(thresh_temp != foreground)
 
@@ -618,21 +505,7 @@ class instance_count:
 		for idx, val in enumerate(gt_foreground[0]):
 			gt_coords.append([gt_foreground[0][idx], gt_foreground[1][idx], gt_foreground[2][idx]])
 
-		eval_dict = {}
-
-		for gtc in gt_coords:
-			gt_z, gt_y, gt_x = gtc[0], gtc[1], gtc[2]
-			eval_dict[(gt_z, gt_y, gt_x)] = {}
-
-			for a, peak in enumerate(intersection_peaks):
-				z, y, x = peak[0], peak[1], peak[2]
-
-				std_euc = distance.seuclidean([gt_z, gt_y, gt_x], [z,y,x], [3.0,1.3,1.3])
-
-				if std_euc <= neighbor_threshold:
-					#instance_label = watershed_output[0][wshed_peaks[a][0]][wshed_peaks[a][1]][wshed_peaks[a][2]]
-					#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
-					eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = std_euc
+		eval_dict = match_routine(gt_coords, intersection_peaks, neighbor_threshold)
 
 		for k1, v1 in eval_dict.items():
 			if v1 != {}:
@@ -648,23 +521,9 @@ class instance_count:
 
 		print('No prediction peak for GT (FN): ' + str(fn_count))
 
-		eval_dict = {}
+		fp_eval_dict = match_routine(intersection_peaks, gt_coords, neighbor_threshold)
 
-		for a, peak in enumerate(intersection_peaks):
-			z, y, x = peak[0], peak[1], peak[2]
-			eval_dict[(z, y, x)] = {}
-
-			for gtc in gt_coords:
-				gt_z, gt_y, gt_x = gtc[0], gtc[1], gtc[2]
-
-				std_euc = distance.seuclidean([z,y,x], [gt_z, gt_y, gt_x], [3.0,1.3,1.3])
-
-				if std_euc <= neighbor_threshold:
-					#instance_label = watershed_output[0][wshed_peaks[a][0]][wshed_peaks[a][1]][wshed_peaks[a][2]]
-					#eval_dict[gt_z, gt_y, gt_x][(z,y,x)] = {instance_label, std_euc}
-					eval_dict[z, y, x][(gt_z,gt_y,gt_x)] = std_euc
-
-		for k1, v1 in eval_dict.items():
+		for k1, v1 in fp_eval_dict.items():
 			if v1 != {}:
 				pass
 				#v1sorted = {k:v for k,v in sorted(v1.items(), key=lambda item: item[1])}
@@ -1126,18 +985,17 @@ class InverseAngularError:
 
 
 def get_evaluation_metric(config):
-	"""
-	Returns the evaluation metric function based on provided configuration
-	:param config: (dict) a top level configuration object containing the 'eval_metric' key
-	:return: an instance of the evaluation metric
-	"""
+    """
+    Returns the evaluation metric function based on provided configuration
+    :param config: (dict) a top level configuration object containing the 'eval_metric' key
+    :return: an instance of the evaluation metric
+    """
+    def _metric_class(class_name):
+        m = importlib.import_module('pytorch3dunet.unet3d.metrics')
+        clazz = getattr(m, class_name)
+        return clazz
 
-	def _metric_class(class_name):
-		m = importlib.import_module('pytorch3dunet.unet3d.metrics')
-		clazz = getattr(m, class_name)
-		return clazz
-
-	assert 'eval_metric' in config, 'Could not find evaluation metric configuration'
-	metric_config = config['eval_metric']
-	metric_class = _metric_class(metric_config['name'])
-	return metric_class(**metric_config)
+    assert 'eval_metric' in config, 'Could not find evaluation metric configuration'
+    metric_config = config['eval_metric']
+    metric_class = _metric_class(metric_config['name'])
+    return metric_class(**metric_config)
