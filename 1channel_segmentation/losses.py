@@ -139,74 +139,6 @@ class GaussianDiceLoss(_AbstractDiceLoss):
         g_target = self.smoothing(target)
         return compute_per_channel_dice(g_input, g_target, weight=self.weight)
 
-def compute_loss_time_dice(input):
-    all_logits = []
-    print(input[0].shape)
-    for cur_idx in range(input[0].shape[0]):
-        all_logits.append(input[0][cur_idx])
-
-    all_loss = 0
-    for idx in range(len(all_logits) - 1):
-        all_loss += compute_one_dice(all_logits[idx], all_logits[idx + 1], smooth=1)
-    return all_loss
-
-
-def compute_one_dice(logits1, logits2, smooth=1):
-    iflat = logits1.flatten()
-    tflat = logits2.flatten()
-    intersection = (iflat * tflat).sum()
-
-    # return 1 - ((2. * intersection + smooth) /
-    #             (iflat.sum() + tflat.sum() + smooth))
-    denominator = (iflat**2 + tflat**2).sum()
-    return 1 - ((2. * intersection + smooth) /
-    				(denominator + smooth))
-
-
-class TemporalDiceLoss(_AbstractDiceLoss):
-    def __init__(self, weight=None, sigmoid_normalization=True):
-        super().__init__(weight, sigmoid_normalization)
-        self.smoothing = GaussianSmoothing(3, 7, 2, 3).to('cuda')
-
-    def dice(self, input, target, weight):
-        g_input = self.smoothing(input)
-        g_target = self.smoothing(target)
-        return compute_per_channel_dice(g_input, g_target, weight=self.weight) + compute_loss_time_dice(input)
-
-def compute_distribution_loss(input):
-    all_logits = []
-    for cur_idx in range(input.shape[0]):
-        all_logits.append(input[cur_idx])
-
-    all_loss = 0
-    for idx in range(len(all_logits) - 1):
-        all_loss += compute_distribution(all_logits[idx], all_logits[idx + 1], smooth=1)
-    return all_loss
-
-
-def compute_distribution(logits1, logits2, smooth=1):
-    iflat = logits1.flatten()
-    tflat = logits2.flatten()
-
-    mean1 = torch.mean(logits1)
-    mean2 = torch.mean(logits2)
-
-    std1 = torch.std(logits1)
-    std2 = torch.std(logits2)
-
-    return torch.sqrt((mean1 - mean2)**2 + (std1 - std2)**2)
-
-
-class TemporalDistributionLoss(_AbstractDiceLoss):
-    def __init__(self, weight=None, sigmoid_normalization=True):
-        super().__init__(weight, sigmoid_normalization)
-        self.smoothing = GaussianSmoothing(1, 7, 2, 3).to('cuda')
-
-    def dice(self, input, target, weight):
-        g_input = self.smoothing(input)
-        g_target = self.smoothing(target)
-        return compute_per_channel_dice(input, target, weight=self.weight) + compute_distribution_loss(input)
-
 class MaskingTemporalLoss:
     def __init__(self, weight=None, sigmoid_normalization=True):
         super().__init__(weight, sigmoid_normalization)
@@ -219,23 +151,6 @@ class MaskingTemporalLoss:
 
         input = input * mask
         target = target * mask
-
-
-# class MultiHeadLoss:
-#     def __init__(self, weight=None, sigmoid_normalization=False):
-#         super().__init__(weight, sigmoid_normalization)
-
-#     def forward(self, input, target1, target2, weight):
-#             #def dice(self, input, target, weight):
-#         g_input = self.smoothing(input)
-#         g_target = self.smoothing(target1)
-#         loss1 = compute_per_channel_dice(g_input, g_target1, weight=self.weight)
-
-#         l2 = SmoothL1Loss()
-#         loss2 = l2(input, target2)
-
-#         return loss1 + loss2
-
 
 class GeneralizedDiceLoss(_AbstractDiceLoss):
     """Computes Generalized Dice Loss (GDL) as described in https://arxiv.org/pdf/1707.03237.pdf.
