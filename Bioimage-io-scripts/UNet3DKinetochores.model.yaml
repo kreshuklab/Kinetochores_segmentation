@@ -45,7 +45,7 @@ inputs:
 outputs:
   - name: probability
     description: probability in [0,1]
-    axes: bczyx
+    axes: czyx
     data_type: float32
     data_range: [-inf, inf]
     halo: [0, 32, 48, 48]
