@@ -122,8 +122,7 @@ The actual useful IoU metric implemented. Taking threshold of predictions, getti
 3. Prepare the complete pipeline starting with the input vol and final segmentation output.
 
 ## Another thing to try (let's keep this aside for now):
-Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
-Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data. (Not really useful)
-In fact, let's try -> 2.[Single cell](https://github.com/opnumten/single_cell_segmentation) and 3.[Spatial embeddings](https://github.com/davyneven/SpatialEmbeddings) both on 2d slices for our data.
-
-
+* Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
+* Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data. (Not really useful)
+* In fact, let's try -> 2.[Single cell](https://github.com/opnumten/single_cell_segmentation) and 3.[Spatial embeddings](https://github.com/davyneven/SpatialEmbeddings) both on 2d slices for our data.
+* Analyze the distance between sources in a pair. If its more or less constant, enforce this property in a loss.
