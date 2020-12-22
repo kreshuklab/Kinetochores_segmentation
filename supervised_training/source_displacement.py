@@ -149,4 +149,7 @@ if __name__ == '__main__':
     prefix = args.prefix
 
     src_dis = SourceDisplacement()
+
+    coordinates_dir = src_dis.get_trajectories(dirpath)
+
     # call required methods here after
