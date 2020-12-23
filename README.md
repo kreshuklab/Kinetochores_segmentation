@@ -126,3 +126,4 @@ The actual useful IoU metric implemented. Taking threshold of predictions, getti
 * Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data. (Not really useful)
 * In fact, let's try -> 2.[Single cell](https://github.com/opnumten/single_cell_segmentation) and 3.[Spatial embeddings](https://github.com/davyneven/SpatialEmbeddings) both on 2d slices for our data.
 * Analyze the distance between sources in a pair. If its more or less constant, enforce this property in a loss.
+* We've used 1 + 3 (edt + vec_edt) channels for regression task, there's another idea to modify this with distance and angle between sources in a pair. 1 channel for distance between the sources and 3 channels for the angles. The convention could be to use positive distance for the first element/ source of the pair and negative for second element/ source.
