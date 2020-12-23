@@ -1,0 +1,57 @@
+Different experiments:
+
+binary dilation
+dilated 2ch temporal (basically 6 ch raw, 1 ch label with dilation - 2 types: dilation iter1, iter2)
+dice 10e
+dice 20e
+GDice 3-1-5e, 3-1-10e, 3-1-15e, 7-2-10e, 9-3-10e
+
+dilated temporal (3ch raw, 1 ch label with dilation - iter1,iter2)
+
+
+3 channel seg
+
+4 channel reg
+
+12 channel reg
+
+dist trans
+    1 ch
+    2 ch
+    3 ch - dice 20e
+    6 ch - dice 20e
+
+
+tc consistency
+
+Distribution consistency
+
+3ch raw, 1 ch label
+
+temporal: 3-3
+
+1,2,3,6 ch spherical
+
+2ch temporal
+
+
+
+
+Stardist experiments:
+	2d data exp
+	1 ch	
+	3 ch
+	4 ch
+
+	Num of rays: 720, 768, 896
+	different thresh values
+
+	different dilation sizes
+
+
+
+
+
+
+
+

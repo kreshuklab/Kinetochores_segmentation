@@ -1,0 +1,19 @@
+Files modified:
+
+pytorch3dunet/datasets/hdf5.py
+pytorch3dunet/datasets/utils.py
+pytorch3dunet/unet3d/losses.py
+pytorch3dunet/unet3d/metrics.py
+pytorch3dunet/unet3d/model.py
+pytorch3dunet/unet3d/predictor.py
+pytorch3dunet/unet3d/trainer.py
+pytorch3dunet/unet3d/utils.py
+
+New Files:
+pytorch3dunet/unet3d/Smoothing.py
+resources/train_dice_egfp.yaml
+resources/train_config_egfp.yaml
+resources/train_general_dice_egfp.yaml
+resources/test_dice_egfp.yaml
+resources/test_config_egfp.yaml
+resources/test_general_dice_egfp.yaml

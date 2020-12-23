@@ -1,0 +1,5 @@
+Metrics: simply adding up the metrics is probably not a good idea (you assume that they are on the same scale and you lose the information how the two different tasks contribute to it).
+Instead I would log both metrics seperately in TB.
+If you need to have a combined metric for learning rate adaptation or early stopping, you can still add them up for this, but then make sure that they are both normalized similarly.
+
+For the multihead case, you could also introduce a weight factor between the seg term and the log term here

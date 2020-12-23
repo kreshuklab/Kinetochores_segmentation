@@ -1,0 +1,4 @@
+Running sequence:
+Take new_processed vols
+Invert labels and apply threshold for dist transform labeling
+Apply 0-80 for instance

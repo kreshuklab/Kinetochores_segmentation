@@ -1,0 +1,4 @@
+Original task is to segment and track the kinetochores across 18 time steps
+
+Since the ground truth is only a coordinate, we modify the label to be spherical dilated version which provides some form of sphere. Now we try to segment this 1. as foreground background thing
+2. Instance segmentation - with stardist -> its working!!!
