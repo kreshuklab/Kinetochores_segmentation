@@ -25,10 +25,10 @@ timestamp: 2019-12-11T12:22:32Z  # ISO 8601
 inputs:
   - name: raw
     description: raw input
-    axes: bczyx  # letters of axes in btczyx
+    axes: czyx  # letters of axes in btczyx
     data_type: float32
     data_range: [-inf, inf]
-    shape: [1, 1, 48, 128, 128]
+    shape: [1, 48, 128, 128]
     preprocessing:  # list of preprocessing steps
       - name: zero_mean_unit_variance  # name of preprocessing step
         kwargs:
@@ -45,14 +45,14 @@ inputs:
 outputs:
   - name: probability
     description: probability in [0,1]
-    axes: bczyx
+    axes: czyx
     data_type: float32
     data_range: [-inf, inf]
-    halo: [0, 0, 32, 48, 48]
+    halo: [0, 32, 48, 48]
     shape:
       reference_input: raw
-      scale: [1, 1, 1, 1, 1]
-      offset: [0, 0, 0, 0, 0]
+      scale: [1, 1, 1, 1]
+      offset: [0, 0, 0, 0]
 
 language: python
 framework: pytorch
@@ -63,11 +63,11 @@ dependencies: conda:../environment.yaml
 test_inputs: [test_input.npy]
 test_outputs: [test_output.npy]
 
-sample_inputs: [sample_input.npy]
-sample_outputs: [sample_output.npy]
+# sample_inputs: [sample_input.npy]
+# sample_outputs: [sample_output.npy]
 
 weights:
  pytorch_state_dict:
    authors: [Ashwin Samudre;@bioimage-io]
-   sha256: e4d3885bccbe41cbf6c1d825f3cd2b707c7021ead5593156007e407a16b27cf2
-   source: https://zenodo.org/record/3446812/files/unet3d_kinetochores_weights.torch
+   #sha256: e4d3885bccbe41cbf6c1d825f3cd2b707c7021ead5593156007e407a16b27cf2
+   source: [best_checkpoint.pytorch]
