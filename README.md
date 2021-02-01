@@ -109,19 +109,18 @@ The actual useful IoU metric implemented. Taking threshold of predictions, getti
 2. Eval metric done with segmentation output reaching 69 TP, 10 FN and 17 FP, which is good for temporal vol 5 (label vol 13).
 3. Regression postprocessing involves either a) take the prediction output -> apply gaussian filter and take minima, get watershed and matching. b) Invert the output and apply gaussian filter and proceed with segmentation like postprocessing. - Done
 
-## ToDo:
-2. Get the StarDist output -> F1 score.
 
-## Update 13/11:
 1. Temporal dice loss added.
-2. TODO: Add distribution learning loss
-
+2. Add distribution learning loss - Done.
+3. Get the StarDist output -> F1 score - Done.
 
 ## WIP:
-2. Need the soft IoU or mAP running.
-3. Prepare the complete pipeline starting with the input vol and final segmentation output.
+1. Prepare the complete pipeline starting with the input vol and final segmentation output. - Bioimage.io addition
+2. Multihead network specs simplification (PR in Pytorch-3dUNet)
+
 
 ## Another thing to try (let's keep this aside for now):
+* Need the soft IoU or mAP running.
 * Harmonic embeddings are there for the 2d data and it works really good with the instance segmentation of biological images. The idea could be to adapt it to 3d data.
 * Harmonic embeddings network are based on 2d datasets -> 1. quick trial with 2d slices for kinetochores data. (Not really useful)
 * In fact, let's try -> 2.[Single cell](https://github.com/opnumten/single_cell_segmentation) and 3.[Spatial embeddings](https://github.com/davyneven/SpatialEmbeddings) both on 2d slices for our data.
